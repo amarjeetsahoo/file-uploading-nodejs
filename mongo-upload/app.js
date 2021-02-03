@@ -8,7 +8,7 @@ const imgModel = require('./models/model');
 require('dotenv/config');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4200;
 
 mongoose.connect(process.env.URL, {
     useNewUrlParser: true,
@@ -26,14 +26,22 @@ app.set('view engine', "ejs");
 
 var storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads')
+        cb(null, 'uploads/blogs')
     },
     filename: (req, file, cb) => {
-        cb(null, file.fieldname + '-' + Date.now())
+        cb(null, Date.now() + path.extname(file.originalname));
     }
 });
 
-var upload = multer({ storage: storage });
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png') {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+}
+
+var upload = multer({ storage: storage, fileFilter: fileFilter });
 
 app.get('/', (req, res) => {
     imgModel.find({}, (err, items) => {
@@ -53,8 +61,7 @@ app.post('/', upload.single('image'), (req, res, next) => {
         name: req.body.name,
         desc: req.body.desc,
         img: {
-            data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)),
-            contentType: 'image/png'
+            data: fs.readFileSync(path.join(__dirname + '/uploads/blogs/' + req.file.filename))
         }
     }
     imgModel.create(obj, (err, item) => {

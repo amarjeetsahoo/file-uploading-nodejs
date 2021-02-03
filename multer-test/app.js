@@ -33,7 +33,7 @@ app.post('/upload', upload.single('image'), (req, res, next) => {
             message: 'File uploded successfully'
         });
     } catch (error) {
-        console.error(error);
+        // console.error(error);
     }
 });
 
